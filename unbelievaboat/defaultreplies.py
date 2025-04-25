@@ -532,3 +532,21 @@ crimes = [
     "You rob the bank of Eternity for {amount}",
     "You steal {amount} from your boss and don't get caught.",
 ]
+
+
+hunt = [
+    "You went hunting and earned {amount}.",
+    "You tracked down a deer and sold its meat for {amount}.",
+    "You found a hidden stash of wild mushrooms and sold them for {amount}.",
+    "You caught a glimpse of a rare bird and earned {amount} for the sighting.",
+    "You hunted a boar and sold its tusks for {amount}.",
+]
+
+fish = [
+    "You caught some fish and sold them for {amount}.",
+    "You went deep-sea fishing and reeled in a big one worth {amount}.",
+    "You found a hidden fishing spot and earned {amount} from your catch.",
+    "You caught a rare fish and sold it for {amount}.",
+    "You spent the day fishing and made {amount} from your haul.",
+]
+

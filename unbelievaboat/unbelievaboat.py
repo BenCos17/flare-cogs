@@ -12,7 +12,7 @@ from redbot.core.errors import BalanceTooHigh
 from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta, pagify
 
 from .checks import check_global_setting_admin, wallet_disabled_check
-from .defaultreplies import crimes, work
+from .defaultreplies import crimes, work, hunt, fish
 from .functions import roll
 from .roulette import Roulette
 from .settings import SettingsMixin
@@ -46,12 +46,14 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
                 "robcd": 86400,
                 "withdrawcd": 1,
                 "depositcd": 1,
+                "huntcd": 14400,
+                "fishcd": 14400,
             },
             "defaultreplies": True,
-            "replies": {"crimereplies": [], "workreplies": []},
+            "replies": {"crimereplies": [], "workreplies": [], "huntreplies": [], "fishreplies": []},
             "rob": [],
-            "payouts": {"crime": {"max": 300, "min": 10}, "work": {"max": 250, "min": 10}},
-            "failrates": {"crime": 50, "rob": 70},
+            "payouts": {"crime": {"max": 300, "min": 10}, "work": {"max": 250, "min": 10}, "hunt": {"max": 250, "min": 10}, "fish": {"max": 250, "min": 10}},
+            "failrates": {"crime": 50, "rob": 70, "hunt": 50, "fish": 50},
             "fines": {"max": 250, "min": 10},
             "interest": 5,
             "disable_wallet": False,
@@ -76,6 +78,8 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
                 "robcd": None,
                 "depositcd": None,
                 "withdrawcd": None,
+                "huntcd": None,
+                "fishcd": None,
             },
             "wallet": 0,
             "winnings": 0,
@@ -198,6 +202,8 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
             "rob": f"\N{NEGATIVE SQUARED CROSS MARK} You cannot rob a person for another {cooldown}.",
             "withdraw": f"\N{NEGATIVE SQUARED CROSS MARK} You cannot withdraw any more cash for another {cooldown}.",
             "deposit": f"\N{NEGATIVE SQUARED CROSS MARK} You cannot deposit any more cash for another {cooldown}.",
+            "hunt": f"\N{NEGATIVE SQUARED CROSS MARK} You cannot hunt for another {cooldown}.",
+            "fish": f"\N{NEGATIVE SQUARED CROSS MARK} You cannot fish for another {cooldown}.",
         }
         embed = discord.Embed(colour=discord.Color.red(), description=response[job])
         embed.set_author(name=user, icon_url=user.display_avatar)
@@ -410,5 +416,105 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
             await self.walletremove(user, stolen)
         except ValueError:
             embed.description += "\nAfter stealing the cash, you notice your wallet is now full!"
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.bot_has_permissions(embed_links=True)
+    async def hunt(self, ctx):
+        """Hunt for some cash."""
+        if ctx.assume_yes:
+            return await ctx.send("This command can't be scheduled.")
+        cdcheck = await self.cdcheck(ctx, "huntcd")
+        if isinstance(cdcheck, tuple):
+            embed = await self.cdnotice(ctx.author, cdcheck[1], "hunt")
+            return await ctx.send(embed=embed)
+        conf = await self.configglobalcheck(ctx)
+        payouts = await conf.payouts()
+        reward = random.randint(payouts["hunt"]["min"], payouts["hunt"]["max"])
+        reward_sentence = str(humanize_number(reward)) + " " + await bank.get_currency_name(ctx.guild)
+        
+        if await conf.defaultreplies():
+            job = random.choice(hunt)
+            line = job.format(amount=reward_sentence)
+            linenum = hunt.index(job)
+        else:
+            replies = await conf.replies()
+            if not replies["huntreplies"]:
+                return await ctx.send(
+                    "You have custom replies enabled yet haven't added any replies yet."
+                )
+            job = random.choice(replies["huntreplies"])
+            line = job.format(amount=reward_sentence)
+            linenum = replies["huntreplies"].index(job)
+
+        embed = discord.Embed(
+            colour=discord.Color.green(), description=line, timestamp=ctx.message.created_at
+        )
+        embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar)
+        embed.set_footer(text="Reply #{}".format(linenum))
+
+        if not await self.walletdisabledcheck(ctx):
+            try:
+                await self.walletdeposit(ctx, ctx.author, reward)
+            except ValueError:
+                embed.description += f"\nYou've reached the maximum amount of {await bank.get_currency_name(ctx.guild)}s in your wallet!"
+        else:
+            try:
+                await bank.deposit_credits(ctx.author, reward)
+            except BalanceTooHigh as e:
+                await bank.set_balance(ctx.author, e.max_balance)
+                embed.description += f"\nYou've reached the maximum amount of {await bank.get_currency_name(ctx.guild)}s in your bank!"
+
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.bot_has_permissions(embed_links=True)
+    async def fish(self, ctx):
+        """Fish for some cash."""
+        if ctx.assume_yes:
+            return await ctx.send("This command can't be scheduled.")
+        cdcheck = await self.cdcheck(ctx, "fishcd")
+        if isinstance(cdcheck, tuple):
+            embed = await self.cdnotice(ctx.author, cdcheck[1], "fish")
+            return await ctx.send(embed=embed)
+        conf = await self.configglobalcheck(ctx)
+        payouts = await conf.payouts()
+        reward = random.randint(payouts["fish"]["min"], payouts["fish"]["max"])
+        reward_sentence = str(humanize_number(reward)) + " " + await bank.get_currency_name(ctx.guild)
+        
+        if await conf.defaultreplies():
+            job = random.choice(fish)
+            line = job.format(amount=reward_sentence)
+            linenum = fish.index(job)
+        else:
+            replies = await conf.replies()
+            if not replies["fishreplies"]:
+                return await ctx.send(
+                    "You have custom replies enabled yet haven't added any replies yet."
+                )
+            job = random.choice(replies["fishreplies"])
+            line = job.format(amount=reward_sentence)
+            linenum = replies["fishreplies"].index(job)
+
+        embed = discord.Embed(
+            colour=discord.Color.green(), description=line, timestamp=ctx.message.created_at
+        )
+        embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar)
+        embed.set_footer(text="Reply #{}".format(linenum))
+
+        if not await self.walletdisabledcheck(ctx):
+            try:
+                await self.walletdeposit(ctx, ctx.author, reward)
+            except ValueError:
+                embed.description += f"\nYou've reached the maximum amount of {await bank.get_currency_name(ctx.guild)}s in your wallet!"
+        else:
+            try:
+                await bank.deposit_credits(ctx.author, reward)
+            except BalanceTooHigh as e:
+                await bank.set_balance(ctx.author, e.max_balance)
+                embed.description += f"\nYou've reached the maximum amount of {await bank.get_currency_name(ctx.guild)}s in your bank!"
 
         await ctx.send(embed=embed)
