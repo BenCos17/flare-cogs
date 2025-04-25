@@ -51,7 +51,7 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
                 "explorecd": 60,
             },
             "defaultreplies": True,
-            "replies": {"crimereplies": [], "workreplies": [], "huntreplies": [default_hunt_replies], "fishreplies": []},
+            "replies": {"crimereplies": [], "workreplies": [], "huntreplies": default_hunt_replies, "fishreplies": []},
             "rob": [],
             "payouts": {"crime": {"max": 300, "min": 10}, "work": {"max": 250, "min": 10}, "hunt": {"max": 250, "min": 10}, "fish": {"max": 250, "min": 10}},
             "failrates": {"crime": 50, "rob": 70, "hunt": 50, "fish": 50},
