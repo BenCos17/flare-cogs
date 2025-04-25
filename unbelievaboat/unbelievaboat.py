@@ -438,13 +438,16 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
         if default_replies_enabled and default_hunt_replies:
             job = random.choice(default_hunt_replies)
             line = job.format(amount=reward_sentence)
+            reply_index = default_hunt_replies.index(job)
         else:
             line = f"You went hunting and found {reward_sentence}."
+            reply_index = "N/A"
 
         embed = discord.Embed(
             colour=discord.Color.green(), description=line, timestamp=ctx.message.created_at
         )
         embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar)
+        embed.set_footer(text=f"Reply #{reply_index}")
 
         if not await self.walletdisabledcheck(ctx):
             try:
