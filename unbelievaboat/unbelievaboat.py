@@ -291,24 +291,19 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
         payouts = await conf.payouts()
         wage = random.randint(payouts["work"]["min"], payouts["work"]["max"])
         wagesentence = str(humanize_number(wage)) + " " + await bank.get_currency_name(ctx.guild)
-        if await conf.defaultreplies():
-            job = random.choice(work)
-            line = job.format(amount=wagesentence)
-            linenum = work.index(job)
-        else:
-            replies = await conf.replies()
-            if not replies["workreplies"]:
-                return await ctx.send(
-                    "You have custom replies enabled yet haven't added any replies yet."
-                )
-            job = random.choice(replies["workreplies"])
-            linenum = replies["workreplies"].index(job)
-            line = job.format(amount=wagesentence)
+        
+        replies = await conf.replies()
+        if not replies["workreplies"]:
+            return await ctx.send("You have custom replies enabled yet haven't added any replies yet.")
+        
+        job = random.choice(replies["workreplies"])
+        line = job.format(amount=wagesentence)
+        
         embed = discord.Embed(
             colour=discord.Color.green(), description=line, timestamp=ctx.message.created_at
         )
         embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar)
-        embed.set_footer(text="Reply #{}".format(linenum))
+        embed.set_footer(text="Reply #{}".format(replies["workreplies"].index(job)))
         if not await self.walletdisabledcheck(ctx):
             try:
                 await self.walletdeposit(ctx, ctx.author, wage)
@@ -436,25 +431,18 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
         reward = random.randint(payouts["hunt"]["min"], payouts["hunt"]["max"])
         reward_sentence = str(humanize_number(reward)) + " " + await bank.get_currency_name(ctx.guild)
         
-        if await conf.defaultreplies():
-            job = random.choice(hunt)
-            line = job.format(amount=reward_sentence)
-            linenum = hunt.index(job)
-        else:
-            replies = await conf.replies()
-            if not replies["huntreplies"]:
-                return await ctx.send(
-                    "You have custom replies enabled yet haven't added any replies yet."
-                )
-            job = random.choice(replies["huntreplies"])
-            line = job.format(amount=reward_sentence)
-            linenum = replies["huntreplies"].index(job)
-
+        replies = await conf.replies()
+        if not replies["huntreplies"]:
+            return await ctx.send("You have custom replies enabled yet haven't added any replies yet.")
+        
+        job = random.choice(replies["huntreplies"])
+        line = job.format(amount=reward_sentence)
+        
         embed = discord.Embed(
             colour=discord.Color.green(), description=line, timestamp=ctx.message.created_at
         )
         embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar)
-        embed.set_footer(text="Reply #{}".format(linenum))
+        embed.set_footer(text="Reply #{}".format(replies["huntreplies"].index(job)))
 
         if not await self.walletdisabledcheck(ctx):
             try:
@@ -486,25 +474,18 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
         reward = random.randint(payouts["fish"]["min"], payouts["fish"]["max"])
         reward_sentence = str(humanize_number(reward)) + " " + await bank.get_currency_name(ctx.guild)
         
-        if await conf.defaultreplies():
-            job = random.choice(fish)
-            line = job.format(amount=reward_sentence)
-            linenum = fish.index(job)
-        else:
-            replies = await conf.replies()
-            if not replies["fishreplies"]:
-                return await ctx.send(
-                    "You have custom replies enabled yet haven't added any replies yet."
-                )
-            job = random.choice(replies["fishreplies"])
-            line = job.format(amount=reward_sentence)
-            linenum = replies["fishreplies"].index(job)
-
+        replies = await conf.replies()
+        if not replies["fishreplies"]:
+            return await ctx.send("You have custom replies enabled yet haven't added any replies yet.")
+        
+        job = random.choice(replies["fishreplies"])
+        line = job.format(amount=reward_sentence)
+        
         embed = discord.Embed(
             colour=discord.Color.green(), description=line, timestamp=ctx.message.created_at
         )
         embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar)
-        embed.set_footer(text="Reply #{}".format(linenum))
+        embed.set_footer(text="Reply #{}".format(replies["fishreplies"].index(job)))
 
         if not await self.walletdisabledcheck(ctx):
             try:
@@ -524,7 +505,7 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
     @commands.guild_only()
     async def explore(self, ctx):
         """Explore the area for random rewards or events."""
-        cdcheck = await self.cdcheck(ctx, "explorecd")  
+        cdcheck = await self.cdcheck(ctx, "explorecd")
         if isinstance(cdcheck, tuple):
             embed = await self.cdnotice(ctx.author, cdcheck[1], "explore")
             return await ctx.send(embed=embed)
@@ -533,25 +514,18 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
         amount = random.randint(payouts["explore"]["min"], payouts["explore"]["max"])
         reward_sentence = str(humanize_number(amount)) + " " + await bank.get_currency_name(ctx.guild)
         
-        if await conf.defaultreplies():
-            job = random.choice(explore)
-            line = job.format(amount=reward_sentence)
-            linenum = explore.index(job)
-        else:
-            replies = await conf.replies()
-            if not replies["explorereplies"]:
-                return await ctx.send(
-                    "You have custom replies enabled yet haven't added any replies yet."
-                )
-            job = random.choice(replies["explorereplies"])
-            line = job.format(amount=reward_sentence)
-            linenum = replies["explorereplies"].index(job)
-
+        replies = await conf.replies()
+        if not replies["explorereplies"]:
+            return await ctx.send("You have custom replies enabled yet haven't added any replies yet.")
+        
+        job = random.choice(replies["explorereplies"])
+        line = job.format(amount=reward_sentence)
+        
         embed = discord.Embed(
             colour=discord.Color.green(), description=line, timestamp=ctx.message.created_at
         )
         embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar)
-        embed.set_footer(text="Reply #{}".format(linenum))
+        embed.set_footer(text="Reply #{}".format(replies["explorereplies"].index(job)))
 
         if not await self.walletdisabledcheck(ctx):
             try:
