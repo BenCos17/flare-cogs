@@ -422,6 +422,7 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
         """Hunt for some cash."""
         if ctx.assume_yes:
             return await ctx.send("This command can't be scheduled.")
+        
         cdcheck = await self.cdcheck(ctx, "huntcd")
         if isinstance(cdcheck, tuple):
             embed = await self.cdnotice(ctx.author, cdcheck[1], "hunt")
@@ -435,19 +436,23 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
         replies = await conf.replies()
         default_replies_enabled = await conf.defaultreplies()  
 
-        if default_replies_enabled and default_hunt_replies:
-            job = random.choice(default_hunt_replies)
+        # Check if custom replies are available
+        if default_replies_enabled and replies["huntreplies"]:
+            job = random.choice(replies["huntreplies"])
             line = job.format(amount=reward_sentence)
-            reply_index = default_hunt_replies.index(job)
+            reply_index = replies["huntreplies"].index(job)  # Get the index of the selected reply
         else:
             line = f"You went hunting and found {reward_sentence}."
-            reply_index = "N/A"
+            reply_index = None  # No index for fallback message
 
         embed = discord.Embed(
             colour=discord.Color.green(), description=line, timestamp=ctx.message.created_at
         )
         embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar)
-        embed.set_footer(text=f"Reply #{reply_index}")
+
+        # Only set the footer if a valid reply index exists
+        if reply_index is not None:
+            embed.set_footer(text=f"Reply #{reply_index}")
 
         if not await self.walletdisabledcheck(ctx):
             try:
