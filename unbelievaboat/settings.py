@@ -32,16 +32,16 @@ class SettingsMixin(MixinMeta):
             default_unit="minutes",
         ),
     ):
-        """Set the cooldown for the work, crime or rob commands. Minimum cooldown is 30 seconds.
+        """Set the cooldown for the work, crime, rob, hunt, or fish commands. Minimum cooldown is 30 seconds.
 
-        The time can be formatted as so `1h30m` etc. Valid times are hours, minutes and seconds.
+        The time can be formatted as so `1h30m` etc. Valid times are hours, minutes, and seconds.
         """
         job = job.lower()
-        if job not in ["work", "crime", "rob", "deposit", "withdraw"]:
+        if job not in ["work", "crime", "rob", "deposit", "withdraw", "hunt", "fish"]:
             return await ctx.send("Invalid job.")
         seconds = time.total_seconds()
         if seconds < 30:
-            return await ctx.send("The miniumum interval is 30 seconds.")
+            return await ctx.send("The minimum interval is 30 seconds.")
         conf = await self.configglobalcheck(ctx)
         async with conf.cooldowns() as cooldowns:
             jobcd = {
@@ -50,6 +50,8 @@ class SettingsMixin(MixinMeta):
                 "rob": "robcd",
                 "deposit": "depositcd",
                 "withdraw": "withdrawcd",
+                "hunt": "huntcd",
+                "fish": "fishcd",
             }
             cooldowns[jobcd[job]] = int(seconds)
         await ctx.tick()
@@ -341,30 +343,4 @@ class SettingsMixin(MixinMeta):
         conf = await self.configglobalcheck(ctx)
         async with conf.payouts() as payouts:
             payouts["fish"][min_or_max] = amount
-        await ctx.tick()
-
-    @check_global_setting_admin()
-    @commands.guild_only()
-    @unb_set.command(name="hunt-cooldown")
-    async def hunt_cooldown_set(self, ctx, time: commands.TimedeltaConverter):
-        """Set the cooldown for the hunt command. Minimum cooldown is 30 seconds."""
-        seconds = time.total_seconds()
-        if seconds < 30:
-            return await ctx.send("The minimum interval is 30 seconds.")
-        conf = await self.configglobalcheck(ctx)
-        async with conf.cooldowns() as cooldowns:
-            cooldowns["huntcd"] = int(seconds)
-        await ctx.tick()
-
-    @check_global_setting_admin()
-    @commands.guild_only()
-    @unb_set.command(name="fish-cooldown")
-    async def fish_cooldown_set(self, ctx, time: commands.TimedeltaConverter):
-        """Set the cooldown for the fish command. Minimum cooldown is 30 seconds."""
-        seconds = time.total_seconds()
-        if seconds < 30:
-            return await ctx.send("The minimum interval is 30 seconds.")
-        conf = await self.configglobalcheck(ctx)
-        async with conf.cooldowns() as cooldowns:
-            cooldowns["fishcd"] = int(seconds)
         await ctx.tick()
