@@ -530,8 +530,39 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
             return await ctx.send(embed=embed)
         conf = await self.configglobalcheck(ctx)
         payouts = await conf.payouts()
-        amount = random.randint(50, 200)  # You can adjust this range if needed
-        reply = random.choice(self.defaultreplies.explore).format(amount=humanize_number(amount))
-        await ctx.send(reply)
-        if "found" in reply or "discovered" in reply or "earned" in reply:
-            await self.walletdeposit(ctx, ctx.author, amount)
+        amount = random.randint(payouts["explore"]["min"], payouts["explore"]["max"])
+        reward_sentence = str(humanize_number(amount)) + " " + await bank.get_currency_name(ctx.guild)
+        
+        if await conf.defaultreplies():
+            job = random.choice(explore)
+            line = job.format(amount=reward_sentence)
+            linenum = explore.index(job)
+        else:
+            replies = await conf.replies()
+            if not replies["explorereplies"]:
+                return await ctx.send(
+                    "You have custom replies enabled yet haven't added any replies yet."
+                )
+            job = random.choice(replies["explorereplies"])
+            line = job.format(amount=reward_sentence)
+            linenum = replies["explorereplies"].index(job)
+
+        embed = discord.Embed(
+            colour=discord.Color.green(), description=line, timestamp=ctx.message.created_at
+        )
+        embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar)
+        embed.set_footer(text="Reply #{}".format(linenum))
+
+        if not await self.walletdisabledcheck(ctx):
+            try:
+                await self.walletdeposit(ctx, ctx.author, amount)
+            except ValueError:
+                embed.description += f"\nYou've reached the maximum amount of {await bank.get_currency_name(ctx.guild)}s in your wallet!"
+        else:
+            try:
+                await bank.deposit_credits(ctx.author, amount)
+            except BalanceTooHigh as e:
+                await bank.set_balance(ctx.author, e.max_balance)
+                embed.description += f"\nYou've reached the maximum amount of {await bank.get_currency_name(ctx.guild)}s in your bank!"
+
+        await ctx.send(embed=embed)
