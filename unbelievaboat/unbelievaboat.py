@@ -436,21 +436,21 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
         replies = await conf.replies()
         default_replies_enabled = await conf.defaultreplies()  
 
-        # Check if custom replies are available
+        # Send a message to the user with the data read
+        await ctx.send(f"Debug Info - Default Replies Enabled: {default_replies_enabled}, Hunt Replies: {replies['huntreplies']}")
+
         if default_replies_enabled and replies["huntreplies"]:
             job = random.choice(replies["huntreplies"])
             line = job.format(amount=reward_sentence)
-            reply_index = replies["huntreplies"].index(job)  # Get the index of the selected reply
+            reply_index = replies["huntreplies"].index(job)  
         else:
             line = f"You went hunting and found {reward_sentence}."
-            reply_index = None  # No index for fallback message
-
+            reply_index = None  
         embed = discord.Embed(
             colour=discord.Color.green(), description=line, timestamp=ctx.message.created_at
         )
         embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar)
 
-        # Only set the footer if a valid reply index exists
         if reply_index is not None:
             embed.set_footer(text=f"Reply #{reply_index}")
 
