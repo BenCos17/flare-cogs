@@ -12,7 +12,7 @@ from redbot.core.errors import BalanceTooHigh
 from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta, pagify
 
 from .checks import check_global_setting_admin, wallet_disabled_check
-from .defaultreplies import crimes, work, hunt, fish, explore, search
+from .defaultreplies import crimes, work, hunt as default_hunt_replies, fish, explore, search
 from .functions import roll
 from .roulette import Roulette
 from .settings import SettingsMixin
@@ -433,19 +433,18 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
         reward_sentence = str(humanize_number(reward)) + " " + await bank.get_currency_name(ctx.guild)
         
         replies = await conf.replies()
-        default_replies_enabled = await conf.defaultreplies()  # Check if default replies are enabled
+        default_replies_enabled = await conf.defaultreplies()  
 
-        if default_replies_enabled and not replies["huntreplies"]:
-            return await ctx.send("You have custom replies enabled yet haven't added any replies yet.")
-        
-        job = random.choice(replies["huntreplies"]) if default_replies_enabled else "You went hunting and found nothing."  # Fallback message
-        line = job.format(amount=reward_sentence) if default_replies_enabled else f"You went hunting and found {reward_sentence}."
+        if default_replies_enabled and default_hunt_replies:
+            job = random.choice(default_hunt_replies)
+            line = job.format(amount=reward_sentence)
+        else:
+            line = f"You went hunting and found {reward_sentence}."
 
         embed = discord.Embed(
             colour=discord.Color.green(), description=line, timestamp=ctx.message.created_at
         )
         embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar)
-        embed.set_footer(text="Reply #{}".format(replies["huntreplies"].index(job) if default_replies_enabled else "N/A"))
 
         if not await self.walletdisabledcheck(ctx):
             try:
