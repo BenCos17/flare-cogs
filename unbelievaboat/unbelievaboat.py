@@ -426,23 +426,26 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
         if isinstance(cdcheck, tuple):
             embed = await self.cdnotice(ctx.author, cdcheck[1], "hunt")
             return await ctx.send(embed=embed)
+        
         conf = await self.configglobalcheck(ctx)
         payouts = await conf.payouts()
         reward = random.randint(payouts["hunt"]["min"], payouts["hunt"]["max"])
         reward_sentence = str(humanize_number(reward)) + " " + await bank.get_currency_name(ctx.guild)
         
         replies = await conf.replies()
-        if not replies["huntreplies"]:
+        default_replies_enabled = await conf.defaultreplies()  # Check if default replies are enabled
+
+        if default_replies_enabled and not replies["huntreplies"]:
             return await ctx.send("You have custom replies enabled yet haven't added any replies yet.")
         
-        job = random.choice(replies["huntreplies"])
-        line = job.format(amount=reward_sentence)
-        
+        job = random.choice(replies["huntreplies"]) if default_replies_enabled else "You went hunting and found nothing."  # Fallback message
+        line = job.format(amount=reward_sentence) if default_replies_enabled else f"You went hunting and found {reward_sentence}."
+
         embed = discord.Embed(
             colour=discord.Color.green(), description=line, timestamp=ctx.message.created_at
         )
         embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar)
-        embed.set_footer(text="Reply #{}".format(replies["huntreplies"].index(job)))
+        embed.set_footer(text="Reply #{}".format(replies["huntreplies"].index(job) if default_replies_enabled else "N/A"))
 
         if not await self.walletdisabledcheck(ctx):
             try:
