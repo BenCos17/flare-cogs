@@ -12,7 +12,7 @@ from redbot.core.errors import BalanceTooHigh
 from redbot.core.utils.chat_formatting import humanize_number, humanize_timedelta, pagify
 
 from .checks import check_global_setting_admin, wallet_disabled_check
-from .defaultreplies import crimes, work, hunt, fish
+from .defaultreplies import crimes, work, hunt, fish, explore, search
 from .functions import roll
 from .roulette import Roulette
 from .settings import SettingsMixin
@@ -48,6 +48,7 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
                 "depositcd": 1,
                 "huntcd": 14400,
                 "fishcd": 14400,
+                "explorecd": 60,
             },
             "defaultreplies": True,
             "replies": {"crimereplies": [], "workreplies": [], "huntreplies": [], "fishreplies": []},
@@ -518,3 +519,19 @@ class Unbelievaboat(Wallet, Roulette, SettingsMixin, commands.Cog, metaclass=Com
                 embed.description += f"\nYou've reached the maximum amount of {await bank.get_currency_name(ctx.guild)}s in your bank!"
 
         await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.guild_only()
+    async def explore(self, ctx):
+        """Explore the area for random rewards or events."""
+        cdcheck = await self.cdcheck(ctx, "explorecd")  
+        if isinstance(cdcheck, tuple):
+            embed = await self.cdnotice(ctx.author, cdcheck[1], "explore")
+            return await ctx.send(embed=embed)
+        conf = await self.configglobalcheck(ctx)
+        payouts = await conf.payouts()
+        amount = random.randint(50, 200)  # You can adjust this range if needed
+        reply = random.choice(self.defaultreplies.explore).format(amount=humanize_number(amount))
+        await ctx.send(reply)
+        if "found" in reply or "discovered" in reply or "earned" in reply:
+            await self.walletdeposit(ctx, ctx.author, amount)

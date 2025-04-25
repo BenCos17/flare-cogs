@@ -11,7 +11,10 @@
         "economy",
         "unbelievaboat",
         "rob",
-        "work"
+        "work",
+        "fish",
+        "hunt"
+
     ],
     "requirements": [
         "tabulate"

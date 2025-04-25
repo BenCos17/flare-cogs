@@ -823,3 +823,28 @@ fish = [
     "You caught a fish that was as majestic as a king, selling it for {amount}.",
 ]
 
+explore = [
+    "You explored the forest and found {amount}.",
+    "You stumbled upon a hidden cave and discovered {amount}.",
+    "You wandered into a mysterious valley and earned {amount}.",
+    "You found an ancient artifact worth {amount}.",
+    "You explored the ruins and uncovered treasures worth {amount}.",
+    "You ventured into the mountains and found {amount} in a hidden stash.",
+    "You discovered a secret garden and earned {amount} from the fruits.",
+    "You explored a haunted house and found {amount} hidden in a drawer.",
+    "You went on an adventure and found {amount} in a treasure chest.",
+    "You explored a deserted island and found {amount} in buried treasure.",
+]
+
+search = [
+    "You searched the park and found {amount} on the ground.",
+    "You looked under the couch and discovered {amount}.",
+    "You searched the attic and found {amount} in an old box.",
+    "You rummaged through the garage and found {amount} worth of items.",
+    "You searched the beach and found {amount} in seashells.",
+    "You looked in the library and found {amount} in an old book.",
+    "You searched the backyard and found {amount} in a hidden spot.",
+    "You looked in the fridge and found {amount} worth of snacks.",
+    "You searched the old shed and found {amount} in forgotten tools.",
+    "You searched the city streets and found {amount} in loose change.",
+]
